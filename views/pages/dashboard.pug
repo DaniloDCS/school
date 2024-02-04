@@ -1,0 +1,583 @@
+extends ../layout
+block content
+  script(src="/public/js/phrases.js")
+  style. 
+    .phrase-day h4 {
+      font-weight: 400;
+      margin-bottom: 0;
+      color: white;
+    }
+
+    .phrase-day p {
+      font-weight: 300;
+      margin-top: 0;
+      color: white;
+    }
+
+    .dash {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .dash-col-1,
+    .dash-col-2,
+    .dash-col-3 {
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    } 
+
+    .dash-col-1 {
+      width: 24%;
+    }
+
+    .dash-col-2 {
+      width: 49%;
+    }
+
+    .dash-col-3 {
+      width: 74%;
+    }    
+
+    .dash-col-4 {
+      width: 99%;
+    }  
+
+    .col-title {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+      margin: 6px;
+      color: white;
+      padding-right: 6px;
+    } 
+
+    #mind-calendar {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 10px;
+    }
+
+    #mind-calendar tr {
+      width: 100%;
+    }
+
+    #mind-calendar tbody tr:nth-child(1) {
+      background-color: red;
+      color: white;
+      font-weight: 600;
+    }
+
+    #mind-calendar td {
+      width: 45px;
+      height: 45px;
+      padding: 6px;
+      text-align: center;
+    }
+
+    #mind-calendar td:hover {
+      cursor: pointer;
+      background-color: #eee;
+    }
+
+    #mind-calendar td.today {
+      background-color: rgba(0, 0, 255, 0.3);
+      color: white;
+      font-weight: 600;
+      border-radius: 50%;
+    }
+
+    .my-role {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+      color: white;
+      border-radius: 10px;
+      padding: 6px;
+    }
+
+    .events {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      color: white;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .event {
+      width: 100%;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 6px;
+      margin: 6px 0;
+      color: white;
+      padding: 6px;
+    }
+
+    .event:hover {
+      cursor: pointer;
+      background-color: #eee;
+      transform: scale(1.1);
+      transition: 0.3s;
+    }
+
+    .event-body p,
+    .event-title {
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+
+    .event-body {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .event-body .event-description {
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event-times {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .event-times .time-start,
+    .event-times .time-finish {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .event-times .time-start div,
+    .event-times .time-finish div,
+    .event-times .time-start p,
+    .event-times .time-finish p {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .crumb {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .crumb-number {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: white;
+      color: black;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .emails {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .email {
+      width: 100%;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+      padding: 6px;
+      background-color: white !important;
+      color: black;
+    }
+
+    .email img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+    }
+
+    .email div {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 2px;
+    }
+
+    .email strong {
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+
+  h3.title-of-page
+    i.fi.fi-rr-layout-fluid
+    |  Dashboard
+
+  h4 👋 Olá, #{user.name}!
+
+  .my-role.bg-blue
+    i.fi.fi-rr-user
+    | Você está logado como #{roles.find(role => role.code == user.role).title}
+
+  .dash 
+    .dash-col-1.bg-cyan
+      .col-title 
+        i.fi.fi-rr-following
+        | Amigos
+    .dash-col-3.bg-green
+      .col-title 
+        i.fi.fi-sr-envelopes
+        | Emails
+        .crumb 
+          .crumb-number #{emails.length}
+      .emails
+        if(!emails.length)
+          | Você não tem novos email
+        else 
+          each email in emails
+            .email.bg-white
+              img(src=email.avatar, alt=email.name)
+              div
+                strong #{email.name} - #{email.email}
+                p #{email.subject}
+                
+    .dash-col-2.bg-yellow
+      .col-title 
+        i.fi.fi-ss-backpack
+        | Escolas 
+    .dash-col-2.bg-purple
+      .col-title 
+        i.fi.fi-sr-graduation-cap
+        | Cursos
+    .dash-col-2.bg-orange
+      .col-title 
+        i.fi.fi-rs-chalkboard-user
+        | Minhas turmas
+    .dash-col-2.bg-pink
+      .col-title 
+        i.fi.fi-br-hand-holding-medical
+        | Supports
+    .dash-col-1.bg-teal
+      .phrase-day 
+        h4
+          .col-title 
+            i.fi.fi-rs-quote-right
+            | Frase do dia
+        p#quote 
+    .dash-col-1.bg-blue
+      .col-title 
+        i.fi.fi-rr-calendar-clock
+        | Calendário
+      table#mind-calendar
+        thead
+          tr 
+            td(onclick="prev()") 
+              i.fi.fi-rr-angle-left
+            td#month(colspan="5")
+
+            td(onclick="next()")
+              i.fi.fi-rr-angle-right
+        tbody#mind-calendar-body              
+    .dash-col-2.bg-white
+      .col-title(style="color: black;")
+        i.fi.fi-rr-calendar-lines-pen
+        | Meus lembretes     
+        .crumb 
+          .crumb-number #{events.events.length}
+      .events 
+        if !events.events.length
+          p Nenhum lembrete recente
+        else
+          each event in events.events
+            - event.dateStart = new Date(event.dateStart + "T" + event.timeStart)
+            - event.dateFinish = new Date(event.dateFinish + "T" + event.timeFinish)
+            .event(style=`background-color: ${event.color}`, onclick=`window.location.href = '/apps/calendar?view=day&day=${event.dateStart.getDate()}&month=${event.dateStart.getMonth() + 1}&year=${event.dateStart.getFullYear()}'`)
+              h4.event-title  
+                i.fi.fi-rr-calendar-lines
+                | #{event.title}
+              .event-body 
+                p.event-description 
+                  i.fi.fi-rr-edit-alt
+                  | #{event.description}
+                .event-times 
+                  div.time-start
+                    div
+                      i.fi.fi-rr-calendar-check
+                      | Início
+                    p
+                      i.fi.fi-bs-time-quarter-past
+                      | #{event.dateStart.toLocaleDateString()} - #{event.timeStart}
+                  div.time-finish
+                    div 
+                      i.fi.fi-rr-calendar-xmark
+                      | Término
+                    p   
+                      i.fi.fi-rr-time-delete
+                      | #{event.dateFinish.toLocaleDateString()} - #{event.timeFinish}
+              .event-footer 
+                p #{event.date}
+
+  button.btn-md.btn-blue(data-modal-open="create-school")
+    i.fi.fi-rr-school
+    |  Cadastrar uma nova escola
+
+  div(data-modal="create-school")
+    form.modal.modal-md(action="/school/create", method="POST")
+      .modal-head
+        h3.modal-title
+          div
+            i.fi.fi-rr-school
+            | Cadastrar uma nova escola
+          i.fi.fi-rr-cross-small.text-red(title="Fechar modal", data-modal-close="create-school")
+      .modal-body
+        .form-item 
+          label(for="name") 
+            i.fi.fi-rr-building
+            |  Nome da escola
+          input(type="text", name="name", id="name", placeholder="Nome da escola", required)
+        .form-item 
+          label(for="email") 
+            i.fi.fi-rr-envelope
+            |  Email da escola
+          input(type="email", name="email", id="email", placeholder="Email da escola", required)
+        .form-item 
+          label(for="phone") 
+            i.fi.fi-rr-phone
+            |  Número da escola
+          input(type="tel", name="phone", id="phone", placeholder="phone da escola", required)
+
+        .form-item 
+          label(for="to") 
+            i.fi.fi-rr-user
+            |  Diretor da escola
+          input(type="text", id="search", placeholder="Username ou email do usuário")
+          input(type="hidden", name="principalId", id="to", readonly)
+          div#users-suggestions
+      .modal-footer
+        button.btn-sm.btn-red(data-modal-close="create-school", type="button")
+          |  Cancelar
+          i.fi.fi-rr-cross-circle
+        button.btn-sm.btn-blue(type="submit")
+          |  Finalizar cadastro
+          i.fi.fi-rr-check-circle
+    
+  script. 
+    const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+    document.getElementById('quote').innerHTML = `
+      <p>"${phrase.phrase}"</p>
+      <br>
+      <strong><em>${phrase.author}</em></strong>
+    `;
+
+    const mindCalendar = document.getElementById('mind-calendar');
+    const mindCalendarBody = document.getElementById('mind-calendar-body');
+    const month = document.getElementById('month');
+    const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outrubro', 'Novembro', 'Dezembro'];
+    const today = new Date();
+
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
+    let currentDay = today.getDate();
+
+    function render(){
+      mindCalendarBody.innerHTML = '';
+      month.innerHTML = months[currentMonth] + '/' + currentYear;
+      
+      let beforeMonthQuantityDays = new Date(currentYear, currentMonth, 0).getDate(),
+          currentMonthQuantityDays = new Date(currentYear, currentMonth + 1, 0).getDate(),
+          afterMonthQuantityDays = 0,
+          daysCount = 0,
+          daysCount2 = 0,
+          currentMonthStartDay = new Date(currentYear, currentMonth, 1).getDay(),
+          quantityOfWeeks = Math.ceil((currentMonthQuantityDays + currentMonthStartDay) / 7) + 1;
+
+      for (let i = 0; i < quantityOfWeeks; i++) {
+        let tr = document.createElement('tr');
+        
+        for (let j = 0; j < 7; j++) {
+          let td = document.createElement('td');
+          
+          if (i == 0) {
+            td.innerHTML = days[j];
+          } else {
+            daysCount2++;
+
+            if (daysCount2 > currentMonthStartDay && daysCount < currentMonthQuantityDays) {
+              daysCount++;
+              td.innerHTML = daysCount;
+              td.setAttribute("onclick", `window.location.href = '/apps/calendar?view=day&day=${daysCount}&month=${currentMonth + 1}&year=${currentYear}'`);
+              if (daysCount == currentDay && currentMonth == today.getMonth() && currentYear == today.getFullYear()) td.classList.add('today');
+            } else {
+              if (daysCount2 <= currentMonthStartDay) {
+                beforeMonthQuantityDays--;
+                td.innerHTML = beforeMonthQuantityDays;
+                td.setAttribute("onclick", `window.location.href = '/apps/calendar?view=day&day=${beforeMonthQuantityDays}&month=${currentMonth}&year=${currentYear}'`);
+              } else {
+                afterMonthQuantityDays++;
+                td.innerHTML = afterMonthQuantityDays;
+                td.setAttribute("onclick", `window.location.href = '/apps/calendar?view=day&day=${afterMonthQuantityDays}&month=${currentMonth + 2}&year=${currentYear}'`);
+              }
+            }
+          }
+
+          tr.appendChild(td);
+        }
+        
+        mindCalendarBody.appendChild(tr);
+      }
+    }
+
+    render();
+
+    function next() {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      render();
+    }
+
+    function prev() {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      render();
+    }
+  //- | Para começar a fazer
+  //- | events,
+  //- | courses,
+  //- | myCourses,
+  //- | schools,
+  //- | principalSchools,
+  //- | coordinatorSchools,
+  //- | teacherClasses,
+  //- | studentsClasses,
+
+
+  //- if user.role == 0
+  //-   | Você é um administrador 
+  //-   br
+  //-   if schools.length
+  //-     h3 Escolas
+  //-     ul 
+  //-       each school in schools 
+  //-         li 
+  //-           a(href='/school/s/' + school.id) #{school.name}
+
+  //-   else
+  //-     h3 Nenhuma escola cadastrada
+  //- else if user.role == 1
+  //-   | Você é um estudante 
+  //-   br
+  //- else if user.role == 2
+  //-   | Você é um professor 
+  //-   br
+  //-   if teacherClasses.length
+  //-     h3 Suas turmas
+  //-     ul 
+  //-       each discipline in teacherClasses 
+  //-         li 
+  //-           a(href='/school/d/' + discipline.disciplineId) #{discipline.name}
+  //-   else
+  //-     h3 Nenhuma turma cadastrada
+  //- else if user.role == 3
+  //-   | Você é um diretor 
+  //-   br
+  //-   if principalSchools.length
+  //-     h3 Escolas
+  //-     ul 
+  //-       each school in principalSchools 
+  //-         li 
+  //-           a(href='/school/s/' + school.id) #{school.name}
+
+  //-   else
+  //-     h3 Nenhuma escola cadastrada
+  //- else if user.role == 4
+  //-   | Você é um coordenador 
+  //-   br
+  //-   if coordinatorSchools.length
+  //-     h3 Suas coordenações
+  //-     ul 
+  //-       each school in coordinatorSchools 
+  //-         li 
+  //-           a(href='/school/c/' + school.id) #{school.name}
+
+  //-   else
+  //-     h3 Nenhuma escola cadastrada
+  //- else if user.role == 5
+  //-   | Você é um bibliotecário 
+  //-   br
+  //- else if user.role == 6
+  //-   | Você é um outro tipo de usuário 
+  //-   br
+  //- else
+  //-   | Você não tem um tipo de usuário definido 
+  //-   br
+
+     

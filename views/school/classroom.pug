@@ -1,0 +1,96 @@
+extends ../layout
+block content
+  | #{message}
+  h1 #{classroom.name}
+  hr
+  h4 Disciplinas 
+  ul 
+    if !disciplines.length
+      li Nenhuma disciplina cadastrada
+    else
+      each discipline in disciplines
+        li 
+          a(href='/school/d/' + discipline.id) #{discipline.name}
+
+  if user.role == 4 || user.role == 7 || user.role == 0
+    br
+    hr
+    br
+    h4 Criar disciplina
+    form(action='/school/d/create', method='post')
+      input(type="hidden", name="classroomId", value=classroom.id, required)
+      input(type="hidden", name="periodId", value=classroom.periodId, required)
+      input(type='text', name='name', placeholder='Nome da disciplina', required)
+      input(type='number', name="workload", placeholder='Carga horária', required)
+      br
+      h4 Professor(es)
+      #teachers
+      
+      input(type="text", id="search-teacher", placeholder="Username ou email do usuário")
+      div#users-suggestions
+
+      h4 Aluno(s)
+
+      br
+      input(type='submit', value='Criar')
+
+    script. 
+      const divUsersSuggestions = document.getElementById('users-suggestions'),
+        inputSearch = document.getElementById('search-teacher'),
+        teachers = document.getElementById('teachers');
+
+      inputSearch.addEventListener('input', () => {
+        const value = inputSearch.value;
+        
+        if (value.length > 0) {
+          fetch('/search/user/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                data: value
+              })
+          })
+            .then(res => res.json())
+            .then(data => {
+              divUsersSuggestions.innerHTML = '';
+              
+              if (data.status === 200) {  
+                data.users?.forEach(user => {
+                  const div = document.createElement('div');
+                  div.innerHTML = `
+                    <div class="user-suggestion">
+                      <img src="${user.avatar}" width="30" height="30" alt="Avatar">
+                      <div>
+                        <p>${user.name} - ${user.username}</p>
+                      </div>
+                    </div>
+                  `;
+
+                  div.addEventListener('click', () => {
+                    const div = document.createElement('div');
+                    div.id = user.id;
+                    div.innerHTML = `
+                      <input type="hidden" name="teachers[]" value="${user.id}">
+                      <p>${user.name} - ${user.username}</p>
+                      <button type="button" class="btn btn-red" onclick="removeTeacher('${user.id}')">Remover</button>
+                    `;
+                    teachers.appendChild(div);
+                    divUsersSuggestions.innerHTML = '';
+                    inputSearch.value = '';
+                  });
+
+                  divUsersSuggestions.appendChild(div);
+                });
+              }
+            });
+        } else {
+          divUsersSuggestions.innerHTML = '';
+        }
+      });
+
+      function removeTeacher(id) {
+        const div = document.getElementById(id);
+        div.remove();
+      }

@@ -1,0 +1,122 @@
+extends ../../layout
+block content 
+  style. 
+    #call {
+      display: flex;
+      flex-direction: column;
+      height: 800px;
+      width: 800px;
+    }
+
+  h1 Vídeoconferencia 
+  input(type="hidden", name="user", id="user", value=user)
+  video#me-video(width="400", height="400", autoplay="true", muted="true")
+  p#calling
+  #users-call
+
+  #call
+
+  script. 
+    const user = JSON.parse(document.getElementById('user').value);
+    const meVideo = document.getElementById('me-video');
+    
+    // pegar a filmagem da webcam
+    const video = document.querySelector('#call');
+
+    // o codigo vem na url da página
+    // ex: /apps/call/v/000-000-000
+
+    const code = window.location.pathname.split('/').pop();
+    const socket = io();
+    
+    navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    }).then(stream => {
+      let show = document.createElement('video');
+      show.srcObject = stream;
+      meVideo.srcObject = stream;
+      show.play();
+      meVideo.play();
+
+      const sendFrame = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = show.videoWidth;
+        canvas.height = show.videoHeight;
+        const context = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(show, 0, 0, canvas.width, canvas.height);
+        const data = canvas.toDataURL('image/png');
+        
+        canvas.toBlob(blob => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64data = reader.result;
+            socket.emit('call', { callId: code, userId: user.id, name: user.name, avatar: user.avatar, frame: base64data });
+          }
+
+          reader.readAsDataURL(blob, 'image/png');
+        });
+      }
+
+      setInterval(sendFrame, 100);
+
+    }).catch(err => {
+      console.log(err);
+    });
+    
+    socket.on('call', data => {
+      let showMe = document.getElementById('user' + data.userId);
+      showMe.src = data.frame;
+      showMe.style.border = '2px solid ' + data.color;      
+    });
+
+    let listOfusersCall = [];
+
+    const usersCall = document.getElementById('users-call');
+    socket.on("join-call", (data) => {
+      usersCall.innerHTML = '';
+      listOfusersCall = data.users;
+
+      if (data.users.length > 1) {
+        data.users.forEach(u => {
+          let showMe = document.createElement('img');
+          showMe.setAttribute('id', "user" + u.userId);
+          document.body.appendChild(showMe);
+          u.color = '#' + Math.floor(Math.random() * 16777215).toString(16);
+          if (u.userId == user.id) user.color = u.color;
+          if (u.userId && u.userId != user.id) createElement('img', { src: u.avatar, width: 40, height: 40, title: u.name }, {}, [], usersCall);
+        });
+      }
+    });
+
+    socket.on("leave-call", (data) => {
+      usersCall.innerHTML = '';
+      listOfusersCall = data.users;
+
+      if (data.users.length > 1) {
+        data.users.forEach(u => {
+          if (u.userId && u.userId != user.id) createElement('img', { src: u.avatar, width: 40, height: 40, title: u.name }, {}, [], usersCall);
+        });
+      }
+    });
+
+    socket.emit('join-call', { callId: code, userId: user.id, name: user.name, avatar: user.avatar });
+
+    window.addEventListener('beforeunload', () => socket.emit('leave-call', { callId: code, userId: user.id, name: user.name, avatar: user.avatar }));
+
+    function capture(video, scaleFactor) {
+      if (scaleFactor == null) {
+        scaleFactor = 1;
+      }
+
+      const w = video.videoWidth * scaleFactor;
+      const h = video.videoHeight * scaleFactor;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, w, h);
+      return canvas;
+    };
+

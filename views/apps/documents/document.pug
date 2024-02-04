@@ -1,0 +1,244 @@
+extends ../../layout
+block content
+  style. 
+    .document {
+      width: 600px;
+      margin: 0 auto;
+      padding: 2cm 2cm 2cm 2cm;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 0 5px #ccc;
+    }
+
+    #document-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 0;
+      padding: 0;
+    }
+
+    hr {
+      margin: 10px 0;
+      border: 0;
+      border-top: 1px solid #ccc;
+    }
+
+    .user-edit, .user-view {
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      display: inline-flex;
+      padding: 0.5em;
+      border-radius: 5px; 
+    }
+
+    .user-edit {
+      background-color: #007bff;
+    }
+
+    .user-view {
+      background-color: #28a745;
+    }
+
+    .cursor-amigo {
+      color: white;
+      width: 4px;
+      height: 20px;
+      margin-left: 2px;
+      display: inline-block;
+      border-radius: 5px;
+      animation: cursor-amigo 3s infinite;
+    }
+
+    @keyframes cursor-amigo {
+      0% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+    
+  | #{message}
+
+  div#users-editing 
+   
+    
+  input(type="hidden", id="configs", value=JSON.stringify(document.configs))
+  input(type="hidden", id="document", value=JSON.stringify(document))
+  input(type="hidden", id="user", value=JSON.stringify(user))
+
+  - const shareMe = shares.filter(share => share.userId == user.id)[0];
+
+  input#document-title(value=document.title, placeholder="Título")
+  p#typing
+  if user.id == document.userId
+    div.document(contenteditable="true")
+      | !{document.content}
+  else
+    div.document(contenteditable=shareMe.permission === 'edit' ? "true" : "false")
+      if document.content == ''
+        p
+      else
+        | !{document.content}
+
+  if user.id == document.userId
+    br
+    hr
+    h4 Usuários que podem editar ou ver este documento
+    ul
+      if (shares.length == 0)
+        li Não há usuários cadastrados
+      else
+        each user in shares
+          li
+            | #{user.name} (#{user.email}) | 
+            if (user.permission === 'edit')
+              span.user-edit Editor
+            else
+              span.user-view Leitor
+
+    br
+    br
+    hr
+    h4 Adicionar usuários que podem editar este documento
+      input(type="hidden", name="documentId", value=document.id)
+      input(type="text", name="username", placeholder="Nome do usuário")
+      select(name="permission")
+        option(value="edit") Editor
+        option(value="view") Leitor 
+      button.btn.btn-primary(type="button", id="addUserEdit") Adicionar
+
+
+  script. 
+    const doc = JSON.parse(document.getElementById('document').value),
+          configs = JSON.parse(document.getElementById('configs').value),
+          documentElement = document.querySelector('.document'),
+          user = JSON.parse(document.getElementById('user').value);
+    
+    const socket = io();
+
+    Object.keys(configs).forEach(key => documentElement.style[key] = configs[key]);
+
+    let listOfUsersEditing = [];
+
+    const titleElement = document.getElementById('document-title');
+    titleElement.addEventListener('change', () => {
+      doc.title = titleElement.value;
+      http('/apps/documents/update/' + doc.id, doc, 'PUT');
+    });
+
+    const addUserEdit = document.getElementById('addUserEdit'); 
+        
+    addUserEdit?.addEventListener('click', () => {
+      const username = document.querySelector('input[name="username"]').value;
+      const documentId = document.querySelector('input[name="documentId"]').value;
+      const permission = document.querySelector('select[name="permission"]').value;
+
+      if (username == '') {
+        createAlert('O nome do usuário é obrigatório!', 'danger');
+        return;
+      }
+      http('/apps/documents/addUserEdit', { username, documentId, permission }, 'PUT');
+    });
+
+    let line = 0, col = 0, totalOfCaracters = 0, position = 0;
+
+    documentElement.addEventListener('input', (e) => {
+      col = window.getSelection().getRangeAt(0).startOffset;
+      totalOfCaracters = window.getSelection().getRangeAt(0).startContainer.parentNode.innerText.length;
+      line = e.target.childNodes.length - 1;
+       
+      let preSelectionRange = window.getSelection().getRangeAt(0);
+      let range = preSelectionRange.cloneRange();
+      range.selectNodeContents(documentElement);
+      range.setEnd(preSelectionRange.endContainer, preSelectionRange.endOffset);
+      position = range.toString().length - preSelectionRange.toString().length;
+
+      let currentTag = window.getSelection().getRangeAt(0).startContainer.parentNode;
+    
+      let content = documentElement.innerHTML;
+
+      let div = `<div class="cursor-amigo" contenteditable="false" title="${user.name}" style="background-color: ${user.color}"></div>`;
+      content = content.replace(/<div class="cursor-amigo" contenteditable="false" title=".*" style="background-color: .*"><\/div>/g, '');
+                
+      content = content.substring(0, position) + div + content.substring(position, content.length);
+
+      socket.emit('document', { documentId: doc.id, content, userId: user.id, myPosition: { line, col, totalOfCaracters, position }, myColor: user.color });
+      socket.emit('typing-document', { documentId: doc.id, userId: user.id, name: user.name });
+    });
+
+    let submitInterval = "";
+
+    documentElement.addEventListener('input', (e) => {
+      clearTimeout(submitInterval);
+      submitInterval = setTimeout(() => {
+        doc.content = documentElement.innerHTML;
+        http('/apps/documents/update/' + doc.id, { content: doc.content }, 'PUT');
+      }, 3000);
+    });
+    
+    socket.on("document", (data) => {    
+      if (data.documentId == doc.id) {
+        let friendLine = data.myPosition.line, friendCol = data.myPosition.col, friendTotalOfCaracters = data.myPosition.totalOfCaracters, friendPosition = data.myPosition.position;
+        documentElement.innerHTML = data.content;  
+      
+        const range = document.createRange();
+        const sel = window.getSelection();
+
+        if (friendLine === line) {
+          if (friendCol > col) range.setStart(documentElement.childNodes[line], col);
+          else if (friendCol <= col) range.setStart(documentElement.childNodes[line], col + friendCol);
+        } else if (friendLine > line) {
+          range.setStart(documentElement.childNodes[line], col);
+        } else if (friendLine < line) {
+          range.setStart(documentElement.childNodes[line], col + friendCol);
+        } else {
+          range.setStart(documentElement.childNodes[line], col);
+        }
+
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        documentElement.focus();
+      }
+    });
+
+    const typing = document.getElementById('typing');
+    socket.on("typing-document", (data) => {
+      typing.innerText = `${data.name} está digitando...`
+      setInterval(() => typing.innerText = '', 3000)
+    });
+
+    const usersEditing = document.getElementById('users-editing');
+    socket.on("join-document", (data) => {
+      usersEditing.innerHTML = '';
+      listOfUsersEditing = data.users;
+
+      if (data.users.length > 1) {
+        data.users.forEach(u => {
+          u.color = '#' + Math.floor(Math.random() * 16777215).toString(16);
+          if (u.userId == user.id) user.color = u.color;
+          if (u.userId && u.userId != user.id) createElement('img', { src: u.avatar, width: 40, height: 40, title: u.name }, {}, [], usersEditing);
+        });
+      }
+    });
+
+    socket.on("leave-document", (data) => {
+      usersEditing.innerHTML = '';
+      listOfUsersEditing = data.users;
+
+      if (data.users.length > 1) {
+
+        data.users.forEach(u => {
+          if (u.userId && u.userId != user.id) createElement('img', { src: u.avatar, width: 40, height: 40, title: u.name }, {}, [], usersEditing);
+        });
+      }
+    });
+
+    socket.emit('join-document', { documentId: doc.id, userId: user.id, name: user.name, avatar: user.avatar });
+
+    window.addEventListener('beforeunload', () => socket.emit('leave-document', { documentId: doc.id, userId: user.id, name: user.name, avatar: user.avatar }));

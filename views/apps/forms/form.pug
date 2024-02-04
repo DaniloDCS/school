@@ -1,0 +1,182 @@
+extends ../../layout
+block content
+  style. 
+    .form {
+      width: 60vw;
+      margin: 0 auto;
+      padding: 2cm 2cm 2cm 2cm;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 0 5px #ccc;
+    }
+
+    #form-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 0;
+      padding: 0;
+    }
+
+    hr {
+      margin: 10px 0;
+      border: 0;
+      border-top: 1px solid #ccc;
+    }
+
+    .alert {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 1em;
+      z-index: 9999;
+    }
+
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border-color: #c3e6cb;
+    }
+
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-color: #f5c6cb;
+    }
+
+    .alert-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border-color: #bee5eb;
+    }
+
+    .user-edit, .user-view {
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      display: inline-flex;
+      padding: 0.5em;
+      border-radius: 5px; 
+    }
+
+    .user-edit {
+      background-color: #007bff;
+    }
+
+    .user-view {
+      background-color: #28a745;
+    }
+    
+  | #{message}
+    
+  input(type="hidden", id="configs", value=JSON.stringify(form.configs))
+  input(type="hidden", id="form", value=JSON.stringify(form))
+
+  - const shareMe = shares.filter(share => share.userId == user.id)[0];
+
+  input#form-title(value=form.title, placeholder="Título")
+  if user.id == form.userId
+    div.form(contenteditable="true")
+      | !{form.content}
+  else
+    div.form(contenteditable=shareMe.permission === 'edit' ? "true" : "false")
+      | !{form.content}
+
+  if user.id == form.userId
+    br
+    hr
+    h4 Usuários que podem editar ou ver este formulário
+    ul
+      if (shares.length == 0)
+        li Não há usuários cadastrados
+      else
+        each user in shares
+          li
+            | #{user.name} (#{user.email}) | 
+            if (user.permission === 'edit')
+              span.user-edit Editor
+            else
+              span.user-view Leitor
+
+    br
+    br
+    hr
+    h4 Adicionar usuários que podem editar este formulário
+      input(type="hidden", name="formId", value=form.id)
+      input(type="text", name="username", placeholder="Nome do usuário")
+      select(name="permission")
+        option(value="edit") Editor
+        option(value="view") Leitor 
+      button.btn.btn-primary(type="button", id="addUserEdit") Adicionar
+
+
+  script. 
+    const form = JSON.parse(document.getElementById('form').value),
+          configs = JSON.parse(document.getElementById('configs').value),
+          documentElement = document.querySelector('.form');
+
+    Object.keys(configs).forEach(key => {
+      documentElement.style[key] = configs[key];
+    });
+
+    const titleElement = document.getElementById('form-title');
+    titleElement.addEventListener('change', () => {
+      form.title = titleElement.value;
+      http('PUT', '/apps/forms/update/' + form.id, form);
+    });
+
+    let interval = null;
+    
+    documentElement.addEventListener('keyup', () => {
+      form.content = documentElement.innerHTML;
+      clearTimeout(interval);
+      
+      interval = setTimeout(() => {
+        http('PUT', '/apps/forms/update/' + form.id, form);
+      }, 3000);
+    });
+
+    function http(method, url, data) {
+      fetch (url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status == 200){
+          createAlert("As alterações foram salvas com sucesso!", "success");
+        } else {
+          createAlert("Ocorreu um erro ao salvar as alterações! " + data.message , "danger");
+        }
+      })
+    }
+
+    function createAlert(message, type = 'info') {
+      const alertElement = document.createElement('div');
+      alertElement.classList.add('alert', 'alert-' + type);
+      alertElement.setAttribute('role', 'alert');
+      alertElement.innerHTML = message;
+      document.body.appendChild(alertElement);
+      
+      setTimeout(() => {
+        alertElement.remove();
+      }, 5000);
+    }
+
+    const addUserEdit = document.getElementById('addUserEdit'); 
+        
+    addUserEdit.addEventListener('click', () => {
+      const username = document.querySelector('input[name="username"]').value;
+      const formId = document.querySelector('input[name="formId"]').value;
+      const permission = document.querySelector('select[name="permission"]').value;
+
+      if (username == '') {
+        createAlert('O nome do usuário é obrigatório!', 'danger');
+        return;
+      }
+
+      http('PUT', '/apps/forms/addUserEdit', { username, formId, permission });
+    });

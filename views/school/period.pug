@@ -1,0 +1,24 @@
+extends ../layout
+block content
+  h1 #{period.name}
+  hr
+  h3 Salas de aula
+  ul  
+    if !classrooms.length
+      li Nenhuma disciplina cadastrada
+    else
+      each classroom in classrooms
+        li 
+          a(href='/school/cl/' + classroom.id) #{classroom.name}
+
+
+  if user.role == 4 || user.role == 7 || user.role == 0
+    br
+    hr
+    br
+    h4 Criar sala de aula
+    form(action='/school/cl/create', method='post')
+      input(type="hidden", name="periodId", value=period.id, required)
+      input(type='text', name='name', placeholder='Nome da sala de aula', required)
+      br
+      input(type='submit', value='Criar')

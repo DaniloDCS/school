@@ -1,0 +1,33 @@
+extends ../layout
+block content
+  if message
+    | #{message}
+
+  h1 Registre um novo usuário
+  form(action="/admin/user/signup", method="POST")
+    div 
+      label(for="name") Name
+      input(type="text", name="name", id="name")
+    div
+      label(for="birthday") Birthday
+      input(type="date", name="birthday", id="birthday")
+    div
+      label(for="email") Email
+      input(type="email", name="email", id="email")
+    div
+      label(for="password") Password
+      input(type="password", name="password", id="password")
+    div
+      label(for="username") Username
+      input(type="text", name="username", id="username")
+    div
+      label(for="role") Role
+      select(name="role", id="role")
+        if roles && roles.length
+          each role in roles
+            option(value=role.code, selected=role.code === '1') #{role.title}
+        else 
+          option(value="1") Estudante
+    div
+      input(type="submit", value="Sign Up")
+    

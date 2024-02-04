@@ -1,0 +1,24 @@
+extends ../layout
+block content
+  h1 #{course.name}
+  hr
+  h3 Periodos
+  ul 
+    if !periods.length
+      li Nenhum periodo cadastrado
+    else
+      each period in periods 
+        li 
+          a(href='/school/p/' + period.id) #{period.name}
+          
+
+  if user.role == 3 || user.role == 8 || user.role == 0
+    br
+    hr
+    br
+    h4 Criar periodo
+    form(action='/school/period/create', method='post')
+      input(type="hidden", name="courseId", value=course.id, required)
+      input(type='text', name='name', placeholder='Nome do periodo', required)
+      br
+      input(type='submit', value='Criar')

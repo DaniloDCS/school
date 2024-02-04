@@ -1,0 +1,435 @@
+extends ../../layout
+block content 
+  style. 
+    .chat {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .chat-user {
+      display: flex;
+      align-items: center;
+      padding: 0.5em;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .chat-user img {
+      border-radius: 50%;
+    }
+
+    .chat-user-name {
+      margin-left: 0.5em;
+    }
+
+    .chat-messages {
+      width: 100%;
+      max-height: calc(100vh - 30%);
+      overflow-y: scroll;
+      padding: 0.5em;
+    }
+
+    .chat-message-left {
+      width: fit-content;
+      border-radius: 0px 5px 5px 5px;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1em;
+      margin-left: auto;
+      align-items: flex-start;
+      background-color: rgb(80, 120, 100);
+      color: white;
+      padding: 6px;
+      float: left;
+    }      
+
+    .chat-message-right {
+      width: fit-content;
+      border-radius: 0px 5px 5px 5px;
+      display: flex;
+      flex-direction: column;
+      margin-right: auto;
+      margin-bottom: 1em;
+      align-items: flex-end;
+      background: #ccc;
+      padding: 6px;
+      float: right;
+    }
+
+    .chat-message-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-input {
+      display: flex;
+      align-items: center;
+      padding: 0.5em;
+      border-top: 1px solid #ccc;
+    }
+
+    .chat-input form {
+      display: flex;
+      flex: 1;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 0.5em;
+      border: 1px solid #ccc;
+      border-radius: 0.5em;
+    }
+
+    .chat-input button {
+      padding: 0.5em;
+      border: 1px solid #ccc;
+      border-radius: 0.5em;
+      margin-left: 0.5em;
+    }
+
+    .chat-input button:hover {
+      background-color: #ccc;
+    }
+
+    .chat-input button:active {
+      background-color: #aaa;
+    }
+
+    .chat-input button:focus {
+      outline: none;
+    }
+
+    .chat-input input:focus {
+      outline: none;
+    }
+
+    .conversation-date {
+      margin: 0.5em 0;
+      text-align: center;
+      font-weight: bold;
+      text-align: center;
+      background-color: #ccc;
+      border-radius: 0.5em;
+    }
+
+    .message-reacts {
+      width: fit-content;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5em;
+      border-radius: 50px;
+      background-color: #ccc;
+      border-radius: 0 0.5em 0.5em 0.5em;
+      animation: fade 0.5s;
+    }
+
+    .message-react-emoji,
+    .message-react {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      background-color: transparent;
+      font-size: 1.5em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-message-left .message-react-emoji,
+    .chat-message-left .message-reacts {
+      float: right;
+    }
+
+    .chat-message-right .message-react-emoji,
+    .chat-message-right .message-reacts {
+      float: left;
+    }
+
+    .message-react:hover {
+      background-color: #aaa;
+    }
+
+    .message-react:active {
+      background-color: #888;
+    }
+
+    @keyframes fade {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+  input#me(type="hidden" value=`${user.id}`)
+  input#friend(type="hidden" value=`${chat.userToId == user.id ? chat.userFromId : chat.userToId}`)
+  
+  - const listOfMessages = JSON.parse(chat.conversations).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  - const conversations = {};
+  - listOfMessages.forEach(message => conversations[new Date(message.createdAt).toLocaleDateString('pt-BR')] = []);
+  - listOfMessages.forEach(message => {
+  -   const date = new Date(message.createdAt).toLocaleDateString('pt-BR');
+  -   conversations[date].push(message);
+  - });
+  
+  - const months = new Array(12).fill(0).map((_, i) => new Date(2020, i, 1).toLocaleString(lang, { month: 'long' }));
+  - const days = new Array(7).fill(0).map((_, i) => new Date(2020, 0, i + 5).toLocaleString(lang, { weekday: 'long' }));
+
+  .chat 
+    .chat-user  
+      img.user-avatar(src=`${chat.avatar}` width="30px" height="30px" style="border-radius: 50%;")
+      .chat-user-name 
+        h5
+          #status-chat(style="background-color: red; width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.5em;")
+          | #{chat.name} - #{chat.username}
+        small#typing(style="display: none;") Digitando...
+    .chat-messages
+      if chat.conversations.length === 0 
+        p Não há mensagens nesta conversa
+      else 
+        each day in Object.keys(conversations)
+          - const today = new Date();
+          - const todayDay = today.getDate(), todayMonth = today.getMonth(), todayYear = today.getFullYear();
+
+          - let dayOfMessages = new Date(day.split('/').reverse().join('-') + ' 12:00:00');
+          - const dayOfMessagesDay = dayOfMessages.getDate(), dayOfMessagesMonth = dayOfMessages.getMonth(), dayOfMessagesYear = dayOfMessages.getFullYear();
+
+          - if (dayOfMessages.toLocaleDateString('pt-BR') === today.toLocaleDateString('pt-BR')) dayOfMessages = 'Hoje';
+          - else if (dayOfMessages.toLocaleDateString('pt-BR') === new Date(today.setDate(today.getDate() - 1)).toLocaleDateString('pt-BR')) dayOfMessages = 'Ontem';
+          - else if (dayOfMessagesDay >= todayDay - 3 && dayOfMessagesDay <= todayDay + 3 && dayOfMessagesMonth === todayMonth && dayOfMessagesYear === todayYear) dayOfMessages = days[dayOfMessages.getDay()];
+          - else if (dayOfMessagesDay >= todayDay - 7 && dayOfMessagesDay <= todayDay + 7 && dayOfMessagesMonth === todayMonth && dayOfMessagesYear === todayYear) dayOfMessages = `${dayOfMessages.toLocaleDateString('pt-BR')} - ${days[dayOfMessages.getDay()]}`;
+          - else if (dayOfMessagesDay >= todayDay - 15 && dayOfMessagesDay <= todayDay + 15 && dayOfMessagesMonth === todayMonth && dayOfMessagesYear === todayYear) dayOfMessages = dayOfMessages.toLocaleDateString('pt-BR');
+          - else if (dayOfMessagesDay >= todayDay - 31 && dayOfMessagesDay <= todayDay + 31 && dayOfMessagesMonth === todayMonth && dayOfMessagesYear === todayYear) dayOfMessages = `${dayOfMessages.toLocaleDateString('pt-BR')} - ${months[dayOfMessages.getMonth()]}`;
+          - else if (dayOfMessagesDay >= todayDay - 365 && dayOfMessagesDay <= todayDay + 365 && dayOfMessagesMonth === todayMonth && dayOfMessagesYear === todayYear) dayOfMessages = `${dayOfMessages.toLocaleDateString('pt-BR')} - ${months[dayOfMessages.getMonth()]} - ${dayOfMessages.getFullYear()}`;
+          - else dayOfMessages = dayOfMessages.toLocaleDateString('pt-BR');
+          
+          p.conversation-date #{dayOfMessages}
+          each message in conversations[day]  
+            div.chat-message-content(id=message.id)
+              div(class="chat-message-" + (message.from === user.id ? 'left' : 'right'))
+                p= message.message
+                small= new Date(message.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                if message.reactions 
+                  .message-reacts-list  
+                    each react in message.reactions
+                      span.message-react-emoji= react.emoji
+
+            //- div.chat-message-content(id=message.id)
+            //-   if message.from === user.id
+            //-     .chat-message-left
+            //-       p= message.message
+            //-       small= new Date(message.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+            //-   else 
+            //-     .chat-message-right
+            //-       p= message.message
+            //-       small= new Date(message.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    .chat-input
+      input#chat-id(type="hidden" value=`${chat.id}`)
+      input#input-message(type="text" name="message" placeholder="Digite sua mensagem")
+      button#btn-send-message(type="submit") Enviar
+            
+  script. 
+    const inputMessage = document.getElementById('input-message'),
+      btnSendMessage = document.getElementById('btn-send-message'),
+      chatId = document.getElementById('chat-id').value,
+      me = document.getElementById('me').value,
+      friend = document.getElementById('friend').value,
+      chatListMessages = document.querySelector('.chat-messages'),
+      status = document.getElementById('status-chat'),
+      typing = document.getElementById('typing');
+
+    const socket = io();
+
+    btnSendMessage.addEventListener('click', () => {
+      const message = inputMessage.value;
+
+      if (message.length > 0) {
+        socket.emit('message-chat', { message, chatId, me });
+        socket.emit('notification', { title: "Nova mensagem", message: myInfos.name + " enviou uma nova mensagem!", userId: friend });
+        
+        http('/apps/chats/newMessage', { text: message, chatId }, 'PUT')
+          .then(data => {
+            if (data.status === 200) createMessage(message, 'me');
+            else console.log(data);
+          }); 
+        inputMessage.value = '';
+        chatListMessages.scrollTop = chatListMessages.scrollHeight;     
+      }
+    });  
+
+    socket.emit('join', { chatId });
+    socket.emit('join-chat', { chatId, userId: me });
+        
+    socket.on('message-chat', data => createMessage(data.message, data.me === me ? 'me' : 'other'));
+
+    socket.on("typing-chat", (data) => {
+      typing.style.display = 'block';
+      setTimeout(() => typing.style.display = 'none', 3000);
+    });
+
+    socket.on("join-chat", (usersChat) => usersChat.users.length > 1 ? status.style.backgroundColor = 'green' : status.style.backgroundColor = 'red');
+    socket.on("leave-chat", (usersChat) => usersChat.users.length === 1 ? status.style.backgroundColor = 'red' : status.style.backgroundColor = 'green');
+
+    window.addEventListener('beforeunload', () => socket.emit('leave-chat', { chatId, userId: me }));
+    inputMessage.addEventListener('input', () => socket.emit('typing-chat', { chatId }));
+    
+    function createMessage(message, from) {
+      createElement('div', { class: 'chat-message-content' }, {},
+        [{
+          tag: 'div',
+          attributes: {
+            class: `chat-message-${from === 'me' ? 'left' : 'right'}`
+          },
+          children: [{
+            tag: 'p',
+            otehrsAttributes: {
+              innerText: message
+            }
+          }, {
+            tag: 'small',
+            otehrsAttributes: {    
+              innerText: dateFormat(new Date(), 'HH:mm')
+            }
+          }]
+        }], chatListMessages);
+
+        const notification = new Audio("/public/sounds/message.mp3");
+        notification.play();
+      
+      chatListMessages.scrollTop = chatListMessages.scrollHeight;
+    }
+
+    chatListMessages.scrollTop = chatListMessages.scrollHeight;
+
+    const allMessages = document.querySelectorAll('.chat-message-content');
+
+    allMessages?.forEach(m => {
+      m.addEventListener('dblclick', () => {
+        let id = m.id;
+        if (!document.getElementById(id).querySelector('.message-reacts')) reacts(m, chatId, id, me);
+        else document.getElementById(id).querySelector('.message-reacts').remove();
+      });
+    });
+
+    function reacts(father, conversationId, messageId, userId){
+      father.removeEventListener('dblclick', () => {});
+      createElement('div', { class: 'message-reacts' }, {},
+        ['❤️', '😂', '😮', '😢', '😡', '👏'].map(emoji => {
+          return {
+            tag: 'button',
+            attributes: {
+              class: 'message-react',
+              type: 'button',
+              value: emoji,
+              onclick: `reactMessage(this, '${conversationId}', '${messageId}', '${userId}', '${emoji}')`
+            },
+            otehrsAttributes: {
+              innerText: emoji
+            }
+          }
+        }), father);
+    }
+    
+    function reactMessage(e, conversationId, messageId, userId, emoji){
+      e.parentElement.innerHTML = `<p>${emoji}</p>`;
+      e.className = 'message-react-emoji';
+      
+      http('/apps/chats/react', { conversationId, messageId, emoji, userId }, 'PUT');
+      socket.emit('react-message-chat', { chatId, messageId, emoji, userId }); 
+    }
+
+    socket.on('react-message-chat', data => {
+      console.log("Novas reações:", data);
+    });
+
+    socket.on('notification', data => {
+      new Notification(data.title, {
+        body: data.message,
+        icon: data.icon
+      });
+    });
+
+
+
+
+
+//- style. 
+
+//-   input(type="hidden", id="user", value=JSON.stringify(user))
+
+//-   .chat
+//-     .chat-user
+//-       img.user-avatar(src=chat.avatar, alt="Imagem do usuário")
+//-       .user-infos  
+//-         .user-name
+//-           #user-status
+//-           | #{chat.name} - 
+//-           strong #{chat.username}
+//-         .user-status
+//-           | #{chat.status}
+//-         #user-typing  
+//-           | #{chat.name.split('')[0]} está digitando...
+//-     #conversation 
+//-       if !conversations.messages.length
+//-         | Inicie agora uma conversa com <b>#{chat.name}</b>!
+//-       else
+//-         each message in conversations
+//-           .message
+//-             .message-content(class="message-" + (chat.id === message.from ? 'sent' : 'received'))
+//-               .message-text
+//-                 | #{message.text}
+//-               .message-date
+//-                 | #{message.date}
+//-             .message-reactions 
+//-     .chat-input
+//-       input(type="text", id="new-message", ,
+//-       othersAttributes:{
+//-         innerHTML: data.data
+//-       }placeholder="Digite sua mensagem...")
+//-       button(type="button", id="send-message") Enviar
+          
+//- script. 
+//-   const user = JSON.parse(document.getElementById('user').value),
+//-         conversation = document.getElementById('conversation'),
+//-         userTyping = document.getElementById('user-typing'),
+//-         userStatus = document.getElementById('user-status'),
+//-         newMessage = document.getElementById('new-message'),
+//-         sendMessage = document.getElementById('send-message');
+//-         socket = io();
+
+//-   function createNewMessageComponent(data){
+//-     createElement("div", {
+//-       class: "message",
+//-       id: data.id
+//-     }, {}, [{
+//-       tag: "div",
+//-       attributes: {
+//-         class: "message-content message-" + (data.from === user.id ? "sent" : "received")
+//-       },
+//-       children: [{
+//-         tag: "div",
+//-         attributes: {
+//-           class: "message-text"
+//-         },
+//-         othersAttributes:{
+//-           innerHTML: data.message
+//-         }
+//-       },  {
+//-         tag: "div",
+//-         attributes: {
+//-           class: "message-date"
+//-         },
+//-         othersAttributes:{
+//-           innerHTML: new Date().toLocaleString("pt-BR", {hour: "numeric", minute: "numeric"})
+//-         }
+//-       }],
+//-       events: {
+
+//-       }
+//-     }])
+//-   }

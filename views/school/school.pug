@@ -1,0 +1,30 @@
+extends ../layout
+block content
+  h1 #{school.name}
+  hr
+  h3 Cursos
+  ul 
+    if !courses.length
+      li Nenhum curso cadastrado
+    else
+      each course in courses 
+        li 
+          a(href='/school/c/' + course.id) #{course.name}
+          | | 
+          a(href='/school/course/delete/' + course.id) Remover
+
+  br
+  hr
+  br
+  if user.role == 3 || user.role == 0
+    h4 Criar curso
+    form(action='/school/course/create', method='post')
+      input(type='text', name='name', placeholder='Nome do curso', required)
+      br
+      br
+      label(for="to") Coordenador do curso
+      input(type="text", id="search", placeholder="Username ou email do usuário")
+      input(type="hidden", name="to", id="to", readonly, required)
+      div#users-suggestions
+      br
+      input(type='submit', value='Criar')

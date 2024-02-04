@@ -1,0 +1,138 @@
+extends ../../layout
+block content
+
+  style. 
+    button[data-modal-open="send-email"] {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      z-index: 10;
+    }
+  
+  mixin modalLink(data, title, content, href)
+    div(data-modal=data)
+      .modal.modal-sm
+        .modal-head
+          h3.modal-title
+            div
+              | !{title}
+            i.fi.fi-rr-cross-small.text-red(title="Fechar modal", data-modal-close=data)
+        .modal-body
+          | !{content}
+        .modal-footer
+          button.btn-sm.btn-red(data-modal-close=data, type="button")
+            | Cancelar
+            i.fi.fi-rr-cross-circle
+          a.btn-sm.btn-blue.text-white(href=href)
+            | Ok
+            i.fi.fi-rr-check-circle
+    
+  mixin email(email)
+    .email(class=(email.toRead === 1 ? "email-onread" : ""))
+      img.user-recived-email-avatar(src=email.avatar, alt="User avatar")
+      a.email-info(href="/apps/emails/v/" + email.emailId)
+        strong.user-email-author #{email.name} - #{email.username} 
+          small(style="float: right;") #{new Date(email.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }).replace(":", "h")}
+        span.email-title #{email.subject} 
+      p.email-config
+        i.fi.fi-rr-envelope-marker.text-yellow(title="Marcar como importante", data-modal-open="mark-important")
+        +modalLink("mark-important", "Marcar como importante", "Você tem certeza que deseja marcar este email como importante?", "/apps/emails/mark-important/" + email.emailId)
+        i.fi.fi-rr-check-double.text-green(title="Marca como lido", data-modal-open="mark-read")
+        +modalLink("mark-read", "Marcar como lido", "Você tem certeza que deseja marcar este email como lido?", "/apps/emails/mark-read/" + email.emailId)
+        i.fi.fi-rr-trash.text-red(title="Excluir email", data-modal-open="delete-email-" + email.emailId)
+        +modalLink("delete-email-" + email.emailId, "Excluir email", "Você tem certeza que deseja excluir este email?", "/apps/emails/delete/" + email.emailId)
+        i.fi.fi-rr-paper-plane.text-blue(title="Encaminhar email", data-modal-open="forward-email")
+        +modalLink("forward-email", "Encaminhar email", "Você tem certeza que deseja encaminhar este email?", "/apps/emails/forward/" + email.emailId)
+        i.fi.fi-rr-ban.text-orange(title="Bloquear este usuário", data-modal-open="block-user")
+        +modalLink("block-user", "Bloquear este usuário", "Você tem certeza que deseja bloquear este usuário?", "/apps/emails/block-user/" + email.emailId)
+      .email-hover-progress
+  
+  h3.title-of-page
+    i.fi.fi-rr-envelope
+    |  Meus emails
+
+  //- .search-mails 
+  //-   input.form-control(type="text", id="search", placeholder="Pesquisar email")
+  //-   button.btn-sm.btn-blue
+  //-     i.fi.fi-rr-search
+  //-     | Falta implementar
+
+  - const listOfEmails = [{ title: "Emails recebidos", icon: "fi fi-rr-inbox", emails: listOfReceivedEmails }, { title: "Emails enviados", icon: "fi fi-rr-paper-plane", emails: listOfSentEmails}]
+
+  each session in listOfEmails
+    .session
+      h4.session-title
+        i(class=session.icon)
+        | #{session.title}
+      .emails-list
+        if (session.emails.length > 0)
+          each email in session.emails
+            +email(email)
+        else
+          p Não há #{session.title.toLowerCase()}!
+  
+    button.btn-md.btn-blue.circle(data-modal-open="send-email")
+      i.fi.fi-sr-envelope-plus
+
+    div(data-modal="send-email")
+      form.modal.modal-md(action="/apps/emails/new", method="POST")
+        .modal-head
+          h3.modal-title
+            div
+              i.fi.fi-rr-envelope
+              | Escreva seu e-mail
+            i.fi.fi-rr-cross-small.text-red(title="Fechar modal", data-modal-close="send-email")
+        .modal-body
+          .form-item 
+            label(for="to") 
+              i.fi.fi-rr-user
+              |  Para
+            input(type="text", id="search", placeholder="Username ou email do usuário")
+            input(type="hidden", name="to", id="to", readonly)
+            div#users-suggestions
+          .form-item
+            label(for="subject") 
+              i.fi.fi-rr-edit-alt
+              |  Assunto
+            input(type="text", name="subject", id="subject", placeholder="Assunto do email") 
+          .form-item
+            label(for="content") 
+              i.fi.fi-rr-edit-alt
+              |  Conteúdo
+            textarea.form-control(name="content", id="content")
+        .modal-footer
+          button.btn-sm.btn-red(data-modal-close="send-email", type="button")
+            |  Cancelar
+            i.fi.fi-rr-cross-circle
+          button.btn-sm.btn-blue(type="submit")
+            |  Enviar
+            i.fi.fi-rr-check-circle
+    
+  
+  script. 
+    const textarea = document.querySelector('textarea');
+    textarea.addEventListener('keydown', autosize);
+
+    function autosize(){
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight+'px';
+    }
+
+    function confirmDelete(id, trId, modalId) {
+      fetch('/apps/emails/delete/', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data: id
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 200) {
+            document.getElementById("delete-email-" + modalId).remove();
+            document.getElementById(trId).remove();
+          }
+        });
+    }

@@ -1,0 +1,131 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Bem-vindo ao Stuudy | Fazer login
+    link(rel="stylesheet", href="/flaticon/css/all/all.css") 
+    link(rel="stylesheet", href="/public/css/all.css")
+    script(defer, src="/public/js/all.js")
+    script(src="/public/js/phrases.js")
+    link(rel="shortcut icon", href="/public/images/stuudy-transparent.png", type="image/x-icon")
+    link(rel="manifest", href="/public/json/manifest.json")
+
+    style.  
+      .container { padding: 10px 20px; justify-content: center; }
+      .col { padding: 10px; }
+      .col-presentation, .col-form { border-radius: 20px; filter: drop-shadow(0 0 30px #333);}
+      .col-presentation { padding: 40px; }
+      .col-form { padding: 80px; }
+
+      .home-img { width: 35em; display: flex; margin: auto; }
+      #welcome { margin-bottom: 20px; }
+      .app-icon { width: 40px; margin: 0 auto 10px auto; display: flex; }
+
+      a { color: #333; text-decoration: none; }
+
+      .signup-box { display: flex; justify-content: flex-end; align-items: center; }
+      .signup-link { margin-bottom: 15px; }
+      .signup-link i { margin-left: 5px; }
+
+      @media (min-width: 520px) {
+        .row { flex-direction: column-reverse !important; }
+      }
+
+      @media (min-width: 768px) {
+        .row { flex-direction: row !important; }
+        .col-form { transform: translateX(-5%); }
+      }        
+
+      @media (min-width: 1024px) {
+        .row { flex-direction: row !important; }
+      }
+
+      #quote { 
+        overflow: hidden; 
+        white-space: nowrap;
+        width: 0;
+        animation: typing 3s steps(40) 1s 1 normal both, blinkTextCursor 500ms steps(40) infinite normal; 
+      }
+
+      @keyframes typing {
+        from { width: 0 }
+        to { width: 100% }
+      }
+
+  body
+    .container
+      .row
+        .col.bg-blue-dark.text-white.col-presentation
+          h2.font-lato#welcome 👋 Seja bem-vindo!
+          h5.font-lato
+            | Com a 
+            strong.text-green Stuudy
+            |  você organiza seus estudos, e ainda se conecta com outros estudantes!
+          img.home-img(src="/public/images/signin.png", alt="Imagem de apresentação do Stuudy")
+          div
+            #quote(class="font-cabin")
+        .col.bg-white.col-form
+          p.signup-box
+            a.signup-link(href="/signup")
+              | Cadastre-se 
+              i.fi.fi-rr-arrow-right
+          img.app-icon(src="/public/images/stuudy-transparent.png", alt="Ícone do Stuudy")
+          h2.text-center Fazer login
+
+          mixin alert(message, type)
+            .alert-box(class="alert-" + type)
+              p.alert
+                i.fi(class=(type == 'error' ? 'fi-rr-cross-circle' : type == 'success' ? 'fi-rr-check-circle' : type == 'warning' ? 'fi-rr-shield-exclamation' : 'fi-rr-info'))
+                | #{message}
+              button.btn.btn-close-alert(onclick="this.parentElement.remove()")
+                i.fi.fi-rr-cross-circle
+
+          if info.type != null
+            +alert(info.message, info.type)
+
+          form.form(action="/signin", method="post")
+            .form-item
+              label(for="email")
+                i.fi.fi-rr-user
+                |  E-mail ou usuário
+              input#username(type="text", name="username", placeholder="Digite seu e-mail ou usuário", required)
+            .form-item
+              label(for="password")
+                i.fi.fi-rr-key
+                |  Senha
+              input#password(type="password", name="password", placeholder="Digite sua senha", required)
+            .form-footer
+              button.btn.btn-green(type="submit")
+                | Entrar 
+                i.fi.fi-rr-sign-in-alt
+              a(href="/forgot-password")
+                i.fi.fi-rr-seal-question
+                |  Esqueci minha senha
+          
+          p.text-center Desenvolvido por 
+            a(href="https://instagram.com/danilocosstaa", class="text-blue" target="_blank")
+              | Danilo Costa
+              i.fi.fi-rr-instagram
+
+    script.
+      const divWelcome = document.querySelector('#welcome');
+      const now = new Date();
+      const hour = now.getHours();
+
+      if (hour >= 0 && hour < 12) divWelcome.innerHTML += ' Bom dia! 🌞';
+      else if (hour >= 12 && hour < 18) divWelcome.innerHTML += ' Boa tarde! 🌅'; 
+      else divWelcome.innerHTML += ' Boa noite! 🌚';
+
+      const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+      document.getElementById('quote').innerText = phrase.phrase + " - " + phrase.author;
+
+      if ('serviceWorker' in navigator){
+        navigator.serviceWorker.register('/public/js/serviceWorker.js')
+          .then(registration => {
+            console.log('Serviço registrado!', registration);
+          })
+          .catch(error => {
+            console.log('Error ao registrar serviço!', error);
+          });
+      }

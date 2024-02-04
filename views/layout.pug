@@ -1,0 +1,135 @@
+doctype html
+html(lang="pt-BR")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    meta(name="theme-color", content="#ffffff")
+    meta(name="apple-mobile-web-app-status-bar-style", content="#ffffff")
+    meta(name="apple-mobile-web-app-capable", content="yes")
+    meta(name="apple-mobile-web-app-title", content="Stuudy")
+    meta(name="msapplication-TileImage", content="/public/images/stuudy-transparent.png")
+    meta(name="msapplication-TileColor", content="#ffffff")
+    meta(name="application-name", content="Stuudy")
+    meta(name="description", content="Stuudy é uma plataforma de estudos online, onde você pode criar grupos de estudos, compartilhar documentos, criar formulários, agendar eventos e muito mais.")
+    meta(name="keywords", content="stuudy, estudos, plataforma, online, grupos, documentos, formulários, eventos, agenda, chat, bate-papo, mensagens, conversas, suporte, ajuda, dúvidas, perguntas, respostas")
+    meta(name="author", content="Danilo Costa | @danilocosstaa")
+    meta(name="robots", content="index, follow")
+    meta(name="googlebot", content="index, follow")
+    meta(name="google", content="notranslate")
+
+    link(rel="stylesheet", href="/flaticon/css/all/all.css")
+    link(rel="stylesheet", href="/public/css/all.css")
+    script(src="/io/socket.io.js")
+    script(src="/public/js/all.js", defer)
+    link(rel="shortcut icon", href="/public/images/stuudy-transparent.png", type="image/x-icon")
+    //- link(rel="manifest", href="/public/json/manifest.json")
+    link(rel="apple-touch-icon", href="/public/images/stuudy-transparent.png")    
+    title Stuudy | #{title} 
+  body(class=user.theme)  
+    script.
+      IO = io();
+      myInfos = toObject(`#{JSON.stringify(user)}`);
+    
+      function toObject(str) {
+        return JSON.parse(str.replace(/&quot;/g, '"').replace(/"\[/g, '[').replace(/\]"/g, ']').replace(/"\{/g, '{').replace(/\}"/g, '}'));
+      }
+      
+    .container
+      .row.row-app
+        .menu-app.menu-closed
+          .app-info
+            img.app-logo(src="/public/images/stuudy-transparent.png", alt)
+            h3.app-name Stuudy
+            button#controller-menu.btn.bg-transparent.text-white &#9776;
+          hr.hr
+          ul.menu-options
+          
+            mixin menuOption(title, icon, href, color)
+              li.menu-option(title=title)
+                a.menu-link(href=href) 
+                  i.menu-icon(class=icon, style="color: " + color + ";")
+                  label.menu-title #{title}
+
+            if user.role == 0
+              +menuOption("Administração", "menu-icon fi fi-rr-settings", "/admin", "lime")
+            +menuOption("Dashboard", "menu-icon fi fi-rr-layout-fluid", "/", "red")
+            +menuOption("Meu perfil", "menu-icon fi fi-rr-user", "/me", "blue")
+            +menuOption("Emails", "menu-icon fi fi-rr-envelopes", "/apps/emails", "yellow")
+            +menuOption("Apps", "menu-icon fi fi-rr-apps", "/apps", "pink")
+            +menuOption("Chats", "menu-icon fi fi-rr-comment", "/apps/chats", "green")
+            +menuOption("Grupos", "menu-icon fi fi-rr-users", "/apps/groups", "orange")
+            +menuOption("Documentos", "menu-icon fi fi-rr-file-invoice", "/apps/documents", "purple")
+            +menuOption("Formulários", "menu-icon fi fi-rr-ballot", "/apps/forms", "brown")
+            +menuOption("Calendário", "menu-icon fi fi-rr-calendar", "/apps/calendar", "esmerald")
+            +menuOption("Suporte", "menu-icon fi fi-rr-headset", "/support", "cyan")
+            +menuOption("Sair", "menu-icon fi fi-rr-exit", "/logout", "teal")
+          hr.hr
+          .user-info
+            img.user-avatar(src=user.avatar, alt=user.name)
+            .user-details
+              h4.user-name #{user.name}
+              p.user-email #{user.email}
+        .content-app
+          mixin alert(message, type)
+            .alert-box(class="alert-" + type)
+              p.alert
+                i.fi(class=(type == 'error' ? 'fi-rs-cross-circle' : type == 'success' ? 'fi-rs-check-circle' : type == 'warning' ? 'fi-rs-shield-exclamation' : 'fi-rs-info'))
+                | #{message}
+              button.btn.btn-close-alert(onclick="this.parentElement.remove()")
+                i.fi.fi-rr-cross-circle
+
+          if !info
+            - info = { type: null, message: null }
+            
+          if info.type != null
+            +alert(info.message, info.type)
+
+          block content
+    script(src="/io/socket.io.js")
+    script.
+      const btnMenuController = document.getElementById("controller-menu");
+      const menu = document.querySelector(".menu-app");
+
+      btnMenuController.addEventListener("click", () => {
+        if (menu.className.includes("menu-open")) {
+          menu.className = menu.className.replace("menu-open", "menu-closed");
+          btnMenuController.innerHTML = "&#9776;";
+        } else {
+          menu.className = menu.className.replace("menu-closed", "menu-open");
+          btnMenuController.innerHTML = "&times;";
+        }
+      });
+
+      IO.on('connect', () => {
+        IO.emit('join', { userId: myInfos.id, id: myInfos.id, name: myInfos.name, avatar: myInfos.avatar, username: myInfos.username, socketId: IO.id });
+      });
+
+      
+      IO.on('notification', data => {
+        console.log("Notificação recebida: ", data);
+        new Notification(data.title, {
+          body: data.message,
+          icon: data.icon ? data.icon : '/public/images/stuudy-transparent.png'
+        });
+      });
+
+      if ('Notification' in window) {
+        if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              console.log('Permissão concedida');
+            }
+          });
+        }
+      }
+
+      //- if ('serviceWorker' in navigator) {
+      //-   navigator.serviceWorker.register('/public/js/sw.js')
+      //-     .then(registration => {
+      //-       console.log('Service Worker registrado com sucesso');
+      //-     })
+      //-     .catch(error => {
+      //-       console.log('Falha ao registrar o Service Worker');
+      //-     });
+      //- }
+      

@@ -1,0 +1,52 @@
+extends ../../layout
+block content
+  | #{message}
+  h3 Stuudy - Documentos | 
+    a.btn.btn-primary(href="/apps/documents/new") Novo documento
+
+  br
+  br
+  hr
+  br
+
+  if (docs.length > 0)
+    table
+      thead
+        tr
+          th Nome
+          th última atualização
+          th Ações
+      tbody
+        each document in docs
+          tr
+            td #{document.title}
+            td #{document.updatedAt}
+            td
+              a.btn.btn-primary(href="/apps/documents/e/" + document.id) Editar
+              a.btn.btn-danger(href="/apps/documents/d/" + document.id) Excluir
+  else
+    p Não há documentos cadastrados
+
+  br
+  hr
+  h4 Documentos compartilhados comigo
+  br
+  if (sharedDocs.length > 0)
+    table
+      thead
+        tr
+          th Nome
+          th última atualização
+          th Ações
+      tbody
+        each document in sharedDocs
+          tr
+            td #{document.title}
+            td #{document.updatedAt}
+            td
+              if (document.permission === 'edit')
+                a.btn.btn-primary(href="/apps/documents/e/" + document.documentId) Editar
+              else
+                a.btn.btn-primary(href="/apps/documents/v/" + document.documentId) Visualizar
+  else
+    p Não há documentos compartilhados com você

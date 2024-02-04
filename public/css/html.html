@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plataforma para oraganização dos estudos</title>
+    <link
+      rel="stylesheet"
+      href="../../node_modules/@flaticon/flaticon-uicons/css/all/all.css"
+    />
+    <link rel="stylesheet" href="./all.css" />
+
+    <style>
+      .box-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1rem;
+        height: 3rem;
+        background-color: #fff;
+        border-bottom: 1px solid #ccc;
+        width: 100%;
+      }
+
+      .chumb {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 50%;
+        background-color: blue;
+        color: #fff;
+        font-size: 0.8rem;
+      }
+
+      .list-of-chats {
+        overflow-y: scroll;
+        width: 100%;
+        max-height: 50vh;
+      }
+
+      .list-of-chats::-webkit-scrollbar {
+        width: 0.5rem;
+      }
+
+      .list-of-chats::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+      }
+
+      .list-of-chats::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 1rem;
+      }
+      
+      .list-of-chats::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      .chat-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid #ccc;
+        width: 100%;
+      }
+
+      .chat-user-avatar {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        overflow: hidden;
+      }
+
+      .chat-user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .chat-user-info {
+        margin-left: 1rem;
+      }
+
+      .chat-user-name {
+        font-weight: bold;
+      }
+
+      .chat-user-last-message {
+        font-size: 0.8rem;
+        color: #666;
+        white-space: nowrap;
+        word-wrap: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 200px;
+      }
+
+      .chat-show {
+        height: 100vh;
+        background-color: #fff;
+      }
+
+      .user-talking {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        height: 3rem;
+        background-color: #fff;
+        border-bottom: 1px solid #ccc;
+      }
+
+      .talk-avatar {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 50%;
+        overflow: hidden;
+      }
+
+      .talk-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .talk-info {
+        margin-left: 1rem;
+      }
+
+      .talk-name {
+        font-weight: bold;
+      }
+
+      .talk-status {
+        font-size: 0.8rem;
+        color: #666;
+      }
+
+      .conversation {
+        width: 100%;
+        height: calc(100vh - 3rem);
+        overflow-y: scroll;
+        background-color: #f1f1f1;
+        padding: 10px;
+      }
+
+      .conversation {
+        scroll-behavior: smooth;
+      }
+
+      .conversation::-webkit-scrollbar {
+        width: 0.5rem;
+      }
+
+      .conversation::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+      }
+
+      .conversation::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 1rem;
+      }
+
+      .conversation::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      .message-left {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 1rem;
+        gap: 8px;
+      }
+
+      .message-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-bottom: 1rem;
+        gap: 8px;
+        color: white;
+      }
+
+      .message-left img, .message-right img {
+        width: 1.5rem;
+        border-radius: 50%;
+      }
+
+      .message-content {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        background-color: #fff;
+        max-width: 50%;
+      }
+
+      .message-right .message-content {
+        background-color: #007bff;
+      }
+
+    </style>
+  </head>
+  <body>
+    
+    <div class="container">
+      <div class="row">
+        <div class="col-3">
+          <h4 class="box-title"> 
+            <i class="fi fi-rr-comment-alt"></i> 
+            Chats 
+            <div class="chumb">9</div>
+          </h4>
+          <div class="list-of-chats">
+            <div class="chat-item">
+              <div class="chat-user-avatar">
+                <img src="https://picsum.photos/50/50" alt="" />
+              </div>
+              <div class="chat-user-info">
+                <div class="chat-user-name">Nome do chat</div>
+                <div class="chat-user-last-message">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                  Quisquam, voluptatum.
+                </div>
+              </div>
+            </div>
+            <div class="chat-item">
+              <div class="chat-user-avatar">
+                <img src="https://picsum.photos/50/50" alt="" />
+              </div>
+              <div class="chat-user-info">
+                <div class="chat-user-name">Nome do chat</div>
+                <div class="chat-user-last-message">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                  Quisquam, voluptatum.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h4 class="box-title">
+            <i class="fi fi-rr-users"></i>
+            Grupos
+            <div class="chumb">9</div>
+          </h4> 
+          <div class="list-of-chats">
+            <div class="chat-item">
+              <div class="chat-user-avatar">
+                <img src="https://picsum.photos/50/50" alt="" />
+              </div>
+              <div class="chat-user-info">
+                <div class="chat-user-name">Nome do chat</div>
+                <div class="chat-user-last-message">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                  Quisquam, voluptatum.
+                </div>
+              </div>
+            </div>
+            <div class="chat-item">
+              <div class="chat-user-avatar">
+                <img src="https://picsum.photos/50/50" alt="" />
+              </div>
+              <div class="chat-user-info">
+                <div class="chat-user-name">Nome do chat</div>
+                <div class="chat-user-last-message">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                  Quisquam, voluptatum.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-9 chat-show">
+          <h4 class="box-title">
+            <div class="user-talking">
+              <div class="talk-avatar">
+                <img src="https://picsum.photos/50/50" alt="" />
+              </div>
+              <div class="talk-info">
+                <div class="talk-name">Nome do chat</div>
+                <small class="talk-status">Online</small>
+              </div>
+            </div>
+          </h4>
+          <div class="conversation">
+            <div class="message-left">
+              <img src="https://picsum.photos/50/50" alt="" />
+              <div class="message-content">
+                Olá, tudo bem?
+              </div>
+            </div>
+            <div class="message-right">
+              <div class="message-content">
+                Sim, e você?
+              </div>
+              <img src="https://picsum.photos/50/50" alt="" />
+            </div>
+            <div class="message-left">
+              <img src="https://picsum.photos/50/50" alt="" />
+              <div class="message-content">
+                Olá, tudo bem?
+              </div>
+            </div>
+            <div class="message-right">
+              <div class="message-content">
+                Sim, e você?
+              </div>
+              <img src="https://picsum.photos/50/50" alt="" />
+            </div>
+            <div class="message-left">
+              <img src="https://picsum.photos/50/50" alt="" />
+              <div class="message-content">
+                Olá, tudo bem?
+              </div>
+            </div>
+            <div class="message-right">
+              <div class="message-content">
+                Sim, e você?
+              </div>
+              <img src="https://picsum.photos/50/50" alt="" />
+            </div>
+            <div class="message-left">
+              <img src="https://picsum.photos/50/50" alt="" />
+              <div class="message-content">
+                Olá, tudo bem?
+              </div>
+            </div>
+            <div class="message-right">
+              <div class="message-content">
+                Sim, e você?
+              </div>
+              <img src="https://picsum.photos/50/50" alt="" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script></script>
+  </body>
+</html>

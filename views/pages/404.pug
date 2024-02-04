@@ -1,0 +1,75 @@
+style. 
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .status-404 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+  }
+
+  .status-404 h1 {
+    font-size: 10rem;
+    margin-bottom: 0;
+  }
+
+  .status-404 p {
+    font-size: 2rem;
+    margin-top: 0;
+  }
+
+  .status-404 a {
+    text-decoration: none;
+    color: #000;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 1px solid #000;
+    padding: 1rem 2rem;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .status-404 a:hover {
+    background-color: #000;
+    color: #fff;
+  }
+
+  .alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
+  }
+
+.status-404  
+  h1 404
+  p Page not found
+  a(href="/") Go back to home
+
+script. 
+  let alert = document.createElement('div');
+  alert.classList.add('alert');
+  alert.innerHTML = 'Você será redirecionado, automaticamente, em 5 segundos';
+  document.body.appendChild(alert);
+
+  let seconds = 5;
+
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 5000);
+
+  setInterval(() => {
+    alert.innerHTML = 'Você será redirecionado, automaticamente, em ' + seconds + ' segundos';
+    seconds--;
+  }, 1000);

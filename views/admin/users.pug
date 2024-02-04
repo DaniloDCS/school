@@ -1,0 +1,72 @@
+extends ../layout
+block content
+  | #{message}
+
+  a(href="/admin/user/register") Registre um novo usuário
+  h2 Lista de usuários 
+  table
+    thead
+      tr
+        th #
+        th Nome
+        th Username
+        th Email
+        th Role
+        th Ações
+    tbody
+      if users.length == 0
+        tr
+          td(colspan=5) Não há usuários cadastrados
+      else
+        each user, index in users
+          tr
+            td= index + 1
+            td= user.name
+            td= user.username
+            td= user.email
+            td= user.role
+            td
+              a(href="/admin/u/" + user.username) Ver
+              | |
+              button(type="button" class="btn btn-modal-open" data-id="modal-update-" + user.id) Editar
+              | |
+              a(href="/admin/user/" + user.username + "/delete") Deletar
+
+  each user, index in users
+    .modal(id="modal-update-" + user.id, data-id="modal-update-" + user.id)
+      form.modal-lg(action="/admin/user/update", method="POST")
+        .modal-head 
+          h3.modal-title Exemplo de título 
+          button(type="button" class="btn btn-modal-close-ligth") &times;
+        .modal-body
+          div   
+            label(for="id") Id
+            input(type="text", name="id", id="id", value=user.id, readonly) 
+          div 
+            label(for="name") Name
+            input(type="text", name="name", id="name", value=user.name)
+          div
+            - let date = new Date(user.birthday)
+            label(for="birthday") Birthday #{date}
+            input(type="date", name="birthday", id="birthday", value=`${date.getFullYear()}-${date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1}-${date.getDate() < 10 ? '0' + date.getDate() : date.getDate()}`)
+          div
+            label(for="email") Email
+            input(type="email", name="email", id="email", value=user.email)
+          //- div
+          //-   label(for="password") Password
+          //-   input(type="password", name="password", id="password", value=user.password)
+          div
+            label(for="username") Username
+            input(type="text", name="username", id="username", value=user.username)
+          div
+            label(for="role") Role
+            select(name="role", id="role")
+              if roles && roles.length
+                each role in roles
+                  option(value=role.code, selected=role.code === user.role) #{role.title}
+              else 
+                option(value="1") Estudante          
+        .modal-footer
+          button(type="button" class="btn btn-danger") Fechar
+          button(type="submit" class="btn btn-green") Salvar
+    

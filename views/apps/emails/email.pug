@@ -1,0 +1,143 @@
+extends ../../layout
+block content
+  style. 
+    .email {
+      width: 60vw;
+      margin: 0 auto;
+      padding: 2cm 2cm 2cm 2cm;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 0 5px #ccc;
+    }
+
+    #email-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 0;
+      padding: 0;
+    }
+
+    hr {
+      margin: 10px 0;
+      border: 0;
+      border-top: 1px solid #ccc;
+    }
+
+    .alert {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 1em;
+      z-index: 9999;
+    }
+
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border-color: #c3e6cb;
+    }
+
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-color: #f5c6cb;
+    }
+
+    .alert-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border-color: #bee5eb;
+    }
+
+    .user-edit, .user-view {
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      display: inline-flex;
+      padding: 0.5em;
+      border-radius: 5px; 
+    }
+
+  | #{message}
+  h3.email-title #{email.subject} 
+
+  button(type="button" class="btn btn-modal-open" data-id="share-email") Encaminhar email
+  .modal(id="share-email", data-id="share-email")
+    form.modal-md(action="/apps/emails/fwd", method="POST")
+      .modal-head 
+        h3.modal-title Encaminhar email
+        button(type="button" class="btn btn-modal-close-ligth") &times;
+      .modal-body
+        div   
+          label(for="to") Para quem você deseja encaminhar este email?
+          input(type="text", id="search", placeholder="Username ou email do usuário")
+          input(type="hidden", name="to", id="to", readonly)
+          input(type="text", name="emailId", id="emailId", value=email.emailId, readonly)
+          div#users-suggestions
+      .modal-footer
+        button(type="button" class="btn btn-danger") Fechar
+        button(type="submit" class="btn btn-green") Enviar
+
+  div   
+    | De: #{email.name} - #{email.username}
+    br
+    | Data: #{email.createdAt}
+  br
+  br
+  hr
+  div.email
+    | !{email.content}
+
+  script. 
+    const divUsersSuggestions = document.getElementById('users-suggestions'),
+      inputSearch = document.getElementById('search'),
+      inputTo = document.getElementById('to');
+
+    inputSearch.addEventListener('input', () => {
+      const value = inputSearch.value;
+      
+      if (value.length > 0) {
+        fetch('/search/user/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              data: value
+            })
+        })
+          .then(res => res.json())
+          .then(data => {
+            divUsersSuggestions.innerHTML = '';
+            
+            if (data.status === 200) {  
+              data.users?.forEach(user => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                  <div style="display: flex; align-items: center; padding: 0.5em; border-bottom: 1px solid #ccc; cursor: pointer;">
+                    <img src="${user.avatar}" width="30px" height="30px" style="border-radius: 50%;">
+                    <span style="margin-left: 0.5em;">
+                      ${user.name} - ${user.username}
+                      <small style="display: block;">${user.email}</small>
+                    </span>
+                  </div>
+                `;
+              
+                div.addEventListener('click', () => {
+                  inputTo.value = user.id;
+                  inputSearch.value = user.email;
+                  divUsersSuggestions.innerHTML = '';
+                });
+              
+                divUsersSuggestions.appendChild(div);
+              });
+            } else {
+              divUsersSuggestions.innerHTML = 'Nenhum usuário encontrado';
+            }
+          });
+      } else {
+        divUsersSuggestions.innerHTML = 'Nenhum usuário encontrado';
+      }
+    });
+

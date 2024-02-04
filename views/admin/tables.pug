@@ -1,0 +1,8 @@
+extends ../layout
+block content
+  | #{message}
+
+  h4 Lista de tabelas
+    each table in tables
+      div
+        a(href="/admin/table/" + table.name)= table.name

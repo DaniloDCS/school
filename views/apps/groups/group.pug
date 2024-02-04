@@ -1,0 +1,251 @@
+extends ../../layout
+block content   
+  style. 
+    .group {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .group-info {
+      display: flex;
+      align-items: center;
+      padding: 0.5em;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .group-info img {
+      border-radius: 50%;
+    }
+
+    .group-header-info {
+      margin-left: 0.5em;
+    }
+
+    .group-conversations {
+      flex: 1;
+      overflow-y: scroll;
+      padding: 0.5em;
+    }
+
+    .group-message {
+      display: flex;
+      margin-bottom: 1em;
+    }
+
+    .group-message .user-message-info {
+      display: flex;
+      flex-direction: flex;
+      align-items: flex-start;
+    }
+
+    .group-message .user-message-info img {
+      border-radius: 50%;
+    }
+
+    .group-message .user-info {
+      margin-left: 0.5em;
+    }
+
+    .group-message .user-info .user-message-name {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    .group-message .user-info .user-message-username {
+      font-size: 0.8em;
+    }
+
+    .group-message .user-message-content {
+      display: flex;
+      flex-direction: column;
+      margin-left: 0.5em;
+      background-color: rgb(80, 120, 0);
+      color: white;
+      padding: 0.5em;
+      border-radius: 0.5em;
+    }
+
+    .group-message .user-message-content .user-message-content p {
+      margin: 0;
+    }
+
+    .group-conversation-new-message {
+      display: flex;
+      align-items: center;
+      padding: 0.5em;
+      border-top: 1px solid #ccc;
+    }
+
+    .group-conversation-new-message {
+      display: flex;
+      flex: 1;
+    }
+
+    .group-conversation-new-message input[type="text"] {
+      flex: 1;
+      padding: 0.5em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .group-conversation-new-message button {
+      padding: 0.5em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-left: 0.5em;
+    }
+
+
+      .chat-messages {
+      width: 100%;
+      max-height: calc(100vh - 30%);
+      overflow-y: scroll;
+      padding: 0.5em;
+    }
+
+    .chat-message-left {
+      width: fit-content;
+      border-radius: 0px 5px 5px 5px;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1em;
+      margin-left: auto;
+      align-items: flex-start;
+      background-color: rgb(80, 120, 100);
+      color: white;
+      padding: 6px;
+      float: left;
+    }      
+
+    .chat-message-right {
+      width: fit-content;
+      border-radius: 0px 5px 5px 5px;
+      display: flex;
+      flex-direction: column;
+      margin-right: auto;
+      margin-bottom: 1em;
+      align-items: flex-end;
+      background: #ccc;
+      padding: 6px;
+      float: right;
+    }
+
+  | #{message}
+
+  input#me(type="hidden", value=user)
+  input#info-group(type="hidden", value=JSON.stringify(group))
+
+  #users-group
+
+  .group
+    .group-info
+      img(src=group.avatar, width="50", height="50")
+      .group-header-info
+        h3 #{group.name}
+        p #{group.description}
+        small#typing
+    .group-conversations
+      each message in JSON.parse(group.conversations)
+        - const from = users.find(user => user.id === message.from);
+        .group-message
+          .user-message-info
+            img.user-avatar(src=from.avatar, width="30", height="30")
+          .user-message-content
+            small #{from.name} - #{from.username}
+            p #{message.message}     
+    .group-conversation-new-message
+      input#group-id(type="hidden", value=group.id)
+      input#message(type="text", name="content", placeholder="Digite sua mensagem")
+      button#send-message(type="button") Enviar
+
+  script. 
+    const socket = io(),
+      groupId = document.getElementById('group-id').value,
+      message = document.getElementById('message'),
+      sendMessage = document.getElementById('send-message'),
+      group = JSON.parse(document.getElementById('info-group').value),
+      user = JSON.parse(document.getElementById('me').value),
+      chatListMessages = document.querySelector('.group-conversations');
+
+    sendMessage.addEventListener('click', () => {
+      if (message.value.length > 0) {
+        socket.emit('message-group', { message: message.value, groupId, user });
+        
+        http('/apps/groups/newMessage', { message: message.value, groupId }, 'PUT')
+          .then(data => {
+            if (data.status === 200) createMessage(message.value, 'me');
+            else console.log(data);
+          }); 
+
+        message.value = '';
+        chatListMessages.scrollTop = chatListMessages.scrollHeight;     
+      }
+
+      message.focus();
+    });
+
+    socket.on('message-group', data => createMessage(data.message, data.me === me ? 'me' : 'other'));
+
+    const typing = document.getElementById('typing');
+    socket.on("typing-group", (data) => {
+      typing.innerText = `${data.name} está digitando...`
+      setInterval(() => typing.innerText = '', 3000)
+    });
+
+    message.addEventListener('input', () => socket.emit('typing-group', { groupId, userId: user.id, name: user.name }));
+
+    let listOfUsersGroup = [];
+    const usersGroup = document.getElementById('users-group');
+    socket.on("join-group", (data) => {
+      console.log(data);
+      usersGroup.innerHTML = '';
+      listOfUsersGroup = data.users;
+
+      if (data.users.length > 1) {
+        data.users.forEach(u => {
+          u.color = '#' + Math.floor(Math.random() * 16777215).toString(16);
+          if (u.userId == user.id) user.color = u.color;
+          if (u.userId && u.userId != user.id) createElement('img', { src: u.avatar, width: 40, height: 40, title: u.name }, {}, [], usersGroup);
+        });
+      }
+    });
+
+    socket.on("leave-group", (data) => {
+      usersGroup.innerHTML = '';
+      listOfUsersGroup = data.users;
+
+      if (data.users.length > 1) {
+
+        data.users.forEach(u => {
+          if (u.userId && u.userId != user.id) createElement('img', { src: u.avatar, width: 40, height: 40, title: u.name }, {}, [], usersGroup);
+        });
+      }
+    });
+
+    socket.emit('join-group', { groupId, userId: user.id, name: user.name, avatar: user.avatar });
+
+    window.addEventListener('beforeunload', () => socket.emit('leave-group', { groupId, userId: user.id, name: user.name, avatar: user.avatar }));
+
+    function createMessage(message, from) {
+      createElement('div', { class: 'chat-message-content' }, {},
+        [{
+          tag: 'div',
+          attributes: {
+            class: `chat-message-${from === 'me' ? 'left' : 'right'}`
+          },
+          children: [{
+            tag: 'p',
+            otehrsAttributes: {
+              innerText: message
+            }
+          }, {
+            tag: 'small',
+            otehrsAttributes: {    
+              innerText: dateFormat(new Date(), 'HH:mm')
+            }
+          }]
+        }], chatListMessages);
+      
+      chatListMessages.scrollTop = chatListMessages.scrollHeight;
+    }

@@ -1,0 +1,13 @@
+{
+  "name": "Stuudy",
+  "short_name": "Stuudy",
+  "description": "Organize seus estudos!",
+  "start_url": "/signin",
+  "display": "standalone",
+  "background_color": "#f5f5f5",
+  "icons": [{
+    "src": "/public/images/stuudy.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  }]
+}

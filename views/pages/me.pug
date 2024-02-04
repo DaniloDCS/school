@@ -1,0 +1,88 @@
+extends ../layout.pug
+block content
+  style. 
+    img {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: flex;
+      margin: 0 auto;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    textarea {
+      width: 80%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    #themes-show {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      white-space: wrap;
+    }
+
+    .rect {
+      width: 35px;
+      height: 35px;
+      display: inline-block;
+      margin: 5px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .theme-selected {
+      border: 2px solid lime;
+    }
+
+  img(src=user.avatar, alt="avatar")
+  h1= user.name + " - " + user.username
+  h2= user.email
+
+  br
+  br
+  br
+
+  -  const themes = [ "theme-dark", "theme-ligth", "theme-blue", "theme-green", "theme-purple", "theme-yellow", "theme-red", "theme-orange", "theme-cyan", "theme-gray", "theme-pink", "theme-teal", "theme-brown", "theme-esmerald", "theme-lime"];
+  h4.text-center 
+    i.fi.fi-rr-paint-bucket
+    |  Temas
+  br
+  #themes-show
+    each theme in themes
+      span(class="rect " + theme + ( user.theme == theme ? ' theme-selected' : '' ) , for=theme, title=theme.replace("theme-", ""), onclick="changeTheme(this, '" + theme + "')")
+        input(type="radio", name="theme", id=theme, value=theme, style="display: none;")
+
+  br
+  br
+  br
+  
+  textarea(name="", cols="30", rows="10") #{JSON.stringify(user, null, 2)}
+
+  script. 
+    function changeTheme(e, theme) {
+      document.body.className = theme;
+      
+      fetch('/user/theme-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ theme })
+      })
+
+      document.querySelectorAll('.rect').forEach((el) => {
+        el.classList.remove('theme-selected');
+      })
+
+      e.classList.add('theme-selected');
+    }

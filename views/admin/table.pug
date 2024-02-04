@@ -1,0 +1,57 @@
+extends ../layout
+block content
+  h1 #{title}
+
+  table
+    thead
+      tr
+        each col in struc
+          th= col.name
+        th ⚙
+    tbody
+      if values.length == 0
+        tr
+          td(colspan=struc.length) Não há valores cadastrados
+      else
+        each row in values
+          tr
+            each col in struc
+              td
+                form(action="/admin/table/" + title + "/update/" + row.id, method="POST", onsubmit="return false;")
+                  input(type="text", name=col.name, value=row[col.name])
+            td 
+              a(href="/admin/table/" + title + "/delete/" + row.id) Excluir
+
+  script. 
+
+    const inputs = document.querySelectorAll('input');
+
+    inputs?.forEach(input => {
+      const form = input.parentNode;
+      input.addEventListener('change', () => { formSubmit(form, input.name, input.value) });
+      input.addEventListener('keydown', (event) => {
+        if (event.key == 'Enter') formSubmit(form, input.name, input.value);
+      });
+    });
+
+    function formSubmit(form, column, value) {
+      form.onsubmit = () => false;
+
+        fetch(form.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            column,
+            value,
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+
+          if (data.status == 200) alert('Valor atualizado com sucesso!');
+          else alert('Erro ao atualizar valor!');
+        })
+    }

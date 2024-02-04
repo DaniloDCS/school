@@ -1,0 +1,52 @@
+extends ../../layout
+block content
+  | #{message}
+  h3 Stuudy - Formulários | 
+    a.btn.btn-primary(href="/apps/forms/new") Novo documento
+
+  br
+  br
+  hr
+  br
+
+  if (forms.length > 0)
+    table
+      thead
+        tr
+          th Nome
+          th última atualização
+          th Ações
+      tbody
+        each form in forms
+          tr
+            td #{form.title}
+            td #{form.updatedAt}
+            td
+              a.btn.btn-primary(href="/apps/forms/e/" + form.id) Editar
+              a.btn.btn-danger(href="/apps/forms/d/" + form.id) Excluir
+  else
+    p Não há formulários cadastrados
+
+  br
+  hr
+  h4 Formulários compartilhados comigo
+  br
+  if (sharedForms.length > 0)
+    table
+      thead
+        tr
+          th Nome
+          th última atualização
+          th Ações
+      tbody
+        each form in sharedForms
+          tr
+            td #{form.title}
+            td #{form.updatedAt}
+            td
+              if (form.permission === 'edit')
+                a.btn.btn-primary(href="/apps/forms/e/" + form.formId) Editar
+              else
+                a.btn.btn-primary(href="/apps/forms/v/" + form.formId) Visualizar
+  else
+    p Não há formulários compartilhados com você

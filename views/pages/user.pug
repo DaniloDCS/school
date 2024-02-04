@@ -1,0 +1,28 @@
+extends ../layout.pug
+block content
+  style. 
+    img {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: flex;
+      margin: 0 auto;
+    }
+
+    h1, h2, p {
+      text-align: center;
+    }
+
+  img(src=user.avatar, alt="avatar")
+  h1= user.name + " - " + user.username
+  h2= user.email
+
+  // Ex: 22 de setembro de 2020 às 15h00min
+  - const accesses = JSON.parse(user.accesses);
+
+  if (accesses.length > 0)
+    - const date = new Date(accesses[accesses.length - 1].date);
+    p Último login: #{date.getDate()} de #{date.toLocaleString('pt-BR', { month: 'long' })} de #{date.getFullYear()} às #{date.getHours()}h#{date.getMinutes()}min
+  else
+    p Usuário nunca logou
